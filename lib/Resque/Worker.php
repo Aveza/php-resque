@@ -507,6 +507,11 @@ class Resque_Worker
 	 */
 	public function doneWorking()
 	{
+        Resque_Event::trigger('jobComplete',
+                              [
+                                  "queue" => $this->currentJob->queue,
+                                  "id"    => $this->currentJob->payload["id"]
+                              ]);
 		$this->currentJob = null;
 		Resque_Stat::incr('processed');
 		Resque_Stat::incr('processed:' . (string)$this);

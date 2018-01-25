@@ -181,31 +181,34 @@ class Resque_Job
 	 * @return bool
 	 * @throws Resque_Exception When the job's class could not be found or it does not contain a perform method.
 	 */
-	public function perform()
-	{
-		try {
-			Resque_Event::trigger('beforePerform', $this);
+    public function perform() {
 
-			$instance = $this->getInstance();
-			if(method_exists($instance, 'setUp')) {
-				$instance->setUp();
-			}
+        try {
+            Resque_Event::trigger('beforePerform', $this);
 
-			$instance->perform();
+            $instance = $this->getInstance();
+            if (method_exists($instance, 'setUp')) {
+                $instance->setUp();
+            }
 
-			if(method_exists($instance, 'tearDown')) {
-				$instance->tearDown();
-			}
+            $instance->perform();
 
-			Resque_Event::trigger('afterPerform', $this);
-		}
-		// beforePerform/setUp have said don't perform this job. Return.
-		catch(Resque_Job_DontPerform $e) {
-			return false;
-		}
+            if (method_exists($instance, 'tearDown')) {
+                $instance->tearDown();
+            }
 
-		return true;
-	}
+            Resque_Event::trigger('afterPerform',
+                                  [
+                                      "queue" => $this->queue,
+                                      "id"    => $this->payload["id"]
+                                  ]);
+        } // beforePerform/setUp have said don't perform this job. Return.
+        catch (Resque_Job_DontPerform $e) {
+            return false;
+        }
+
+        return true;
+    }
 
 	/**
 	 * Mark the current job as having failed.
