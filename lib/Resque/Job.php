@@ -217,10 +217,12 @@ class Resque_Job
 	 */
 	public function fail($exception)
 	{
-		Resque_Event::trigger('onFailure', array(
-			'exception' => $exception,
-			'job' => $this,
-		));
+        Resque_Event::trigger('onFailure', array(
+            'queue'     => $this->queue,
+            'payload'   => $this->payload,
+            'exception' => $exception,
+            'job'       => $this,
+        ));
 
 		$this->updateStatus(Resque_Job_Status::STATUS_FAILED);
 		Resque_Failure::create(
